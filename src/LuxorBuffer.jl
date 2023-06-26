@@ -6,11 +6,12 @@ import Mods
 
 include("framebuffer.jl")
 include("utils.jl")
+include("scenes.jl")
 include("images.jl")
 
 function main()
-    scene = Circles(512, 512)
-    loop(scene)
+    wrapper = SceneWrapper(512, 512, CircleScene)
+    loop(wrapper)
 end
 
 export main
