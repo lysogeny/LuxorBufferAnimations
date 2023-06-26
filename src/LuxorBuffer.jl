@@ -10,7 +10,8 @@ include("scenes.jl")
 include("images.jl")
 
 function main()
-    wrapper = SceneWrapper(512, 512, CircleScene)
+    fb = FrameBuffer(512, 512)
+    wrapper = SceneWrapper(fb, CircleScene)
     loop(wrapper)
 end
 

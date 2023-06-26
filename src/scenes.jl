@@ -39,6 +39,10 @@ struct SceneWrapper
     scene::AbstractScene
 end
 
+function SceneWrapper(fb::FrameBuffer, scene::DataType)
+    SceneWrapper(fb, scene(size(fb.buffer)...))
+end
+
 function SceneWrapper(w::Int, h::Int, scene::DataType)
     fb = FrameBuffer(w, h)
     SceneWrapper(fb, scene(w, h))
