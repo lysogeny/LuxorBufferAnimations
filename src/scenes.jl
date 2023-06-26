@@ -4,23 +4,23 @@ render!(::AbstractScene) = nothing
 update!(::AbstractScene) = nothing
 
 mutable struct CircleScene <: AbstractScene
-    w::Int
-    h::Int
     θ::Float64
-    r::Int
+    r::Float64
     frame::Int
-    CircleScene(w::Int, h::Int) = new(w, h, 0, 30, 0)
+    CircleScene() = new(0, 30, 0)
 end
 
 function update!(scene::CircleScene)
     scene.θ += 0.1
+    scene.r += 0.1
     scene.frame += 1
 end
 
-function render!(scene::CircleScene)
+function render!(scene::CircleScene, buffer::Matrix{UInt32})
     r = scene.r
     θ = scene.θ
-    Luxor.@imagematrix begin
+    w, h = size(buffer)
+    Luxor.@imagematrix! buffer begin
         Luxor.background("black")
         Luxor.sethue("red")
         Luxor.circle(Luxor.Point(r*cos(θ), r*sin(θ)), r/2-5, action=:fill)
@@ -30,8 +30,8 @@ function render!(scene::CircleScene)
         Luxor.circle(Luxor.Point(r*cos(θ+pi), r*sin(θ+pi)), r/2-5, action=:fill)
         Luxor.sethue("white")
         Luxor.fontsize(20)
-        Luxor.text("frame=$(scene.frame)", -scene.w/2+5, scene.h/2-5, halign=:left, valign=:bottom)
-    end scene.w scene.h
+        Luxor.text("frame=$(lpad(scene.frame, 4, '0'))", -w/2+5, h/2-5, halign=:left, valign=:bottom)
+    end w h
 end
 
 struct SceneWrapper
@@ -39,17 +39,12 @@ struct SceneWrapper
     scene::AbstractScene
 end
 
-function SceneWrapper(fb::FrameBuffer, scene::DataType)
-    SceneWrapper(fb, scene(size(fb.buffer)...))
-end
+SceneWrapper(fb::FrameBuffer, scene::DataType) = SceneWrapper(fb, scene())
 
-function SceneWrapper(w::Int, h::Int, scene::DataType)
-    fb = FrameBuffer(w, h)
-    SceneWrapper(fb, scene(w, h))
-end
+SceneWrapper(w::Int, h::Int, scene::DataType) = SceneWrapper(FrameBuffer(w, h), scene())
 
 function render!(wrapper::SceneWrapper)
-    wrapper.fb.buffer = render(render!(wrapper.scene))
+    render!(wrapper.scene, wrapper.fb.buffer)
     update!(wrapper.fb)
 end
 
