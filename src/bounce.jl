@@ -10,19 +10,21 @@ end
 function Object()
     xy = [rand(-256:256), rand(-256:256)]
     uv = [rand(0.1:0.1:2), rand(0.1:0.1:2)]
-    Object(xy, uv, 1, 0, (-256, 256), (-256, 256))
+    Object(xy, uv, 1, 0, (-256*1.8, 256*1.8), (-256*1.8, 256*1.8))
 end
 
 function update!(object::Object)
     #scene.θ += rand(-0.1:0.01:0.1)
-    object.xy += object.uv
+    object.xy += 5 * object.uv
     if !(object.xlim[1] < object.xy[1] < object.xlim[2])
         object.xy[1] = min(max(object.xlim[1], object.xy[1]), object.xlim[2])
         object.uv[1] *= -1
+        object.θ += rand(-1:0.1:1) * 0.1 * pi
     end
     if !(object.ylim[1] < object.xy[2] < object.ylim[2])
         object.xy[2] = min(max(object.ylim[1], object.xy[2]), object.ylim[2])
         object.uv[2] *= -1
+        object.θ += rand(-1:0.1:1) * 0.1 * pi
     end
 end
 
@@ -32,7 +34,7 @@ mutable struct BounceScene <: AbstractScene
 end
 
 function BounceScene() 
-    BounceScene(0, [Object() for _ in 1:9])
+    BounceScene(0, [Object() for _ in 1:50])
 end
 
 function render!(scene::BounceScene, buffer::Matrix{UInt32})
@@ -41,9 +43,9 @@ function render!(scene::BounceScene, buffer::Matrix{UInt32})
         Luxor.background("white")
         for object in scene.objects
             Luxor.@layer begin
-                Luxor.rotate(object.θ)
                 Luxor.translate(object.xy...)
-                Luxor.scale(object.s)
+                Luxor.scale(0.2)
+                Luxor.rotate(object.θ)
                 Luxor.julialogo(action=:fill, centered=true)
             end
         end
@@ -51,7 +53,7 @@ function render!(scene::BounceScene, buffer::Matrix{UInt32})
 end
 
 function update!(scene::BounceScene)
-    for object in scene.objects
+    Threads.@threads for object in scene.objects
         update!(object) 
     end
 end
