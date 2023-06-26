@@ -11,7 +11,7 @@ include("bounce.jl")
 include("images.jl")
 
 function main()
-    fb = FrameBuffer(512, 512)
+    fb = FrameBuffer(1280, 1024)
     wrapper = SceneWrapper(fb, BounceScene)
     loop(wrapper)
 end
