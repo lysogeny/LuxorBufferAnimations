@@ -1,5 +1,6 @@
 module LuxorBuffer
 
+import LinearAlgebra: norm, dot
 import MiniFB
 import Luxor
 import Mods
